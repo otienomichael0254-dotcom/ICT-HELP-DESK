@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNTRH - My Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: var(--bg-main);
+            color: var(--primary);
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            background: var(--primary-light);
+            color: white;
+            border-radius: 9999px;
+            font-weight: 600;
+            margin-left: 1rem;
+        }
+
+        .user-chip .avatar {
+            width: 24px;
+            height: 24px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.blue { background: #E0E7FF; color: var(--primary); }
+        .stat-icon.yellow { background: #FEF3C7; color: var(--warning); }
+        .stat-icon.green { background: #D1FAE5; color: var(--success); }
+
+        .stat-info h4 {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .tickets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .ticket-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--primary);
+            transition: all 0.2s;
+        }
+
+        .ticket-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateX(2px);
+        }
+
+        .ticket-card.priority-low { border-left-color: var(--info); }
+        .ticket-card.priority-medium { border-left-color: var(--warning); }
+        .ticket-card.priority-high { border-left-color: #F97316; }
+        .ticket-card.priority-urgent { border-left-color: var(--danger); }
+
+        .ticket-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .ticket-top h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .ticket-id {
+            font-family: monospace;
+            color: var(--text-muted);
+            background: var(--bg-main);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+        }
+
+        .ticket-meta {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .ticket-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .ticket-footer {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--bg-main);
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            max-width: 700px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 2px dashed #E5E7EB;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        
+        .recent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a class="nav-brand" href="#">
+            <i class="fas fa-layer-group"></i> MNTRH
+        </a>
+        <div class="nav-links">
+            <button class="nav-link active" onclick="showSection('dashboard')">
+                <i class="fas fa-home"></i> <span>Dashboard</span>
+            </button>
+            <button class="nav-link" onclick="showSection('tickets')">
+                <i class="fas fa-ticket-alt"></i> <span>My Tickets</span>
+            </button>
+            <button class="nav-link" onclick="showSection('newTicket')">
+                <i class="fas fa-plus"></i> <span>New Ticket</span>
+            </button>
+            <div class="user-chip">
+                <div class="avatar" id="userAvatar">?</div>
+                <span id="userName">...</span>
+            </div>
+            <button class="nav-link" onclick="Omnitick.logout()" style="color: var(--danger); margin-left: 0.5rem;">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="page-container">
+
+        <!-- Dashboard Section -->
+        <div class="section active" id="dashboardSection">
+            <h2 class="section-title"><i class="fas fa-home" style="color:var(--primary)"></i> Dashboard Overview</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue"><i class="fas fa-folder-open"></i></div>
+                    <div class="stat-info">
+                        <h4 id="statOpen">0</h4>
+                        <p>Open Tickets</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon yellow"><i class="fas fa-clock"></i></div>
+                    <div class="stat-info">
+                        <h4 id="statPending">0</h4>
+                        <p>Pending Review</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-info">
+                        <h4 id="statResolved">0</h4>
+                        <p>Resolved</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-header">
+                <h3><i class="fas fa-history" style="color:var(--text-muted)"></i> Recent Activity</h3>
+                <button class="btn btn-secondary" onclick="showSection('tickets')">View All</button>
+            </div>
+
+            <div class="tickets-list" id="recentTicketsList"></div>
+        </div>
+
+        <!-- My Tickets Section -->
+        <div class="section" id="ticketsSection">
+            <div class="recent-header">
+                <h2 class="section-title" style="margin:0"><i class="fas fa-ticket-alt" style="color:var(--primary)"></i> My Tickets</h2>
+                <button class="btn btn-primary" onclick="showSection('newTicket')">
+                    <i class="fas fa-plus"></i> Create Ticket
+                </button>
+            </div>
+            <div class="tickets-list" id="allTicketsList"></div>
+        </div>
+
+        <!-- New Ticket Section -->
+        <div class="section" id="newTicketSection">
+            <h2 class="section-title"><i class="fas fa-plus-circle" style="color:var(--primary)"></i> Submit New Ticket</h2>
+            <div class="form-card">
+                <div class="form-group">
+                    <label>Issue Title</label>
+                    <input type="text" id="ticketTitle" class="form-control" placeholder="Briefly describe the problem">
+                </div>
+                <div class="form-group">
+                    <label>Detailed Description</label>
+                    <textarea id="ticketDesc" class="form-control" rows="6" placeholder="Provide as much detail as possible to help us resolve your issue..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Priority Level</label>
+                    <select id="ticketPriority" class="form-control">
+                        <option value="low">Low - General inquiry</option>
+                        <option value="medium" selected>Medium - Issue affecting workflow</option>
+                        <option value="high">High - Important functionality broken</option>
+                        <option value="urgent">Urgent - System down / Critical issue</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button class="btn btn-primary" onclick="submitTicket()">Submit Ticket <i class="fas fa-paper-plane"></i></button>
+                    <button class="btn btn-secondary" onclick="showSection('dashboard')">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/shared.js"></script>
+
+    <script>
+        let currentUser = null;
+        let userTickets = [];
+
+        Omnitick.showLoading();
+
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            db.collection('users').doc(user.uid).get().then((doc) => {
+                if (doc.exists && doc.data().role === 'admin') {
+                    window.location.href = 'admin-dashboard.html';
+                    return;
+                }
+
+                currentUser = doc.exists ? { uid: user.uid, ...doc.data() } : { uid: user.uid, email: user.email, name: user.email };
+                document.getElementById('userName').textContent = currentUser.name || user.email;
+                document.getElementById('userAvatar').textContent = (currentUser.name || user.email).charAt(0).toUpperCase();
+
+                Omnitick.hideLoading();
+                loadTickets();
+            });
+        });
+
+        function showSection(name) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+
+            const map = { dashboard: 'dashboardSection', tickets: 'ticketsSection', newTicket: 'newTicketSection' };
+            document.getElementById(map[name]).classList.add('active');
+
+            const navMap = { dashboard: 0, tickets: 1, newTicket: 2 };
+            document.querySelectorAll('.nav-link')[navMap[name]].classList.add('active');
+            
+            if (name === 'dashboard' || name === 'tickets') loadTickets();
+        }
+
+        function loadTickets() {
+            if (!currentUser) return;
+
+            db.collection('tickets')
+                .where('userId', '==', currentUser.uid)
+                .orderBy('createdAt', 'desc')
+                .get()
+                .then((snap) => {
+                    userTickets = [];
+                    let open = 0, pending = 0, resolved = 0;
+
+                    snap.forEach((doc) => {
+                        const t = { id: doc.id, ...doc.data() };
+                        userTickets.push(t);
+                        if (t.status === 'open') open++;
+                        else if (t.status === 'pending') pending++;
+                        else if (t.status === 'resolved') resolved++;
+                    });
+
+                    document.getElementById('statOpen').textContent = open;
+                    document.getElementById('statPending').textContent = pending;
+                    document.getElementById('statResolved').textContent = resolved;
+
+                    renderTicketList('recentTicketsList', userTickets.slice(0, 5));
+                    renderTicketList('allTicketsList', userTickets);
+                })
+                .catch((err) => Omnitick.showToast('Failed to load tickets: ' + err.message, 'error'));
+        }
+
+        function renderTicketList(containerId, tickets) {
+            const container = document.getElementById(containerId);
+            if (tickets.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>No tickets found</p>
+                        <button class="btn btn-primary" style="margin-top: 1rem" onclick="showSection('newTicket')">Create one now</button>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = tickets.map(t => {
+                const date = Omnitick.formatDate(t.createdAt);
+                const desc = (t.description || '').substring(0, 120) + (t.description?.length > 120 ? '...' : '');
+                return `
+                    <div class="ticket-card priority-${t.priority}">
+                        <div class="ticket-top">
+                            <h4>${t.title}</h4>
+                            <span class="ticket-id">#${t.id.substring(0, 8)}</span>
+                        </div>
+                        <div class="ticket-meta">
+                            <span class="badge status-${t.status}">${t.status}</span>
+                            <span class="badge priority-${t.priority}">${t.priority}</span>
+                        </div>
+                        <p class="ticket-desc">${desc}</p>
+                        <div class="ticket-footer">
+                            <span><i class="fas fa-calendar-alt"></i> ${date}</span>
+                            <span>Updated: ${Omnitick.formatDate(t.updatedAt || t.createdAt)}</span>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function submitTicket() {
+            const title = document.getElementById('ticketTitle').value.trim();
+            const desc = document.getElementById('ticketDesc').value.trim();
+            const priority = document.getElementById('ticketPriority').value;
+
+            if (!title || !desc) {
+                Omnitick.showToast('Please fill in all required fields.', 'error');
+                return;
+            }
+
+            Omnitick.showLoading();
+            db.collection('tickets').add({
+                title,
+                description: desc,
+                priority,
+                status: 'open',
+                userId: currentUser.uid,
+                userName: currentUser.name || currentUser.email,
+                userEmail: currentUser.email,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                assignedTo: null,
+                comments: []
+            }).then(() => {
+                Omnitick.hideLoading();
+                document.getElementById('ticketTitle').value = '';
+                document.getElementById('ticketDesc').value = '';
+                document.getElementById('ticketPriority').value = 'medium';
+                Omnitick.showToast('Ticket submitted successfully!', 'success');
+                showSection('tickets');
+            }).catch((err) => {
+                Omnitick.hideLoading();
+                Omnitick.showToast('Failed to submit ticket: ' + err.message, 'error');
+            });
+        }
+    </script>
+</body>
+</html>

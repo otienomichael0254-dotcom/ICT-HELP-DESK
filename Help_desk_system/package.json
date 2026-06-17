@@ -1,0 +1,23 @@
+{
+  "name": "omnitick-helpdesk",
+  "version": "1.0.0",
+  "description": "Browser-only Help Desk System with Firebase backend",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8000",
+    "build": "echo 'No build step required for browser-only app'"
+  },
+  "keywords": [
+    "helpdesk",
+    "support",
+    "tickets",
+    "firebase"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "firebase": "^10.7.1"
+  },
+  "devDependencies": {}
+}

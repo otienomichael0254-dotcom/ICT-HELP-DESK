@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNTRH - Secure Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        /* Decorative Background */
+        .bg-decor {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: var(--primary);
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            z-index: 0;
+            top: -100px;
+            left: -100px;
+        }
+
+        .bg-decor-2 {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: var(--info);
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.15;
+            z-index: 0;
+            bottom: -50px;
+            right: -50px;
+        }
+
+        .auth-card {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 450px;
+            padding: 2.5rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-header i {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .brand-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .brand-header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 0.25rem;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(0,0,0,0.05);
+            border-radius: var(--radius-md);
+            padding: 0.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .form-panel.active {
+            display: block;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.85rem;
+            margin-top: 1rem;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-decor"></div>
+    <div class="bg-decor-2"></div>
+
+    <div class="auth-card glass animate-slide-up">
+        <div class="brand-header">
+            <i class="fas fa-headset"></i>
+            <h1>MNTRH Portal</h1>
+            <p>Sign in to manage your tickets</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+            <button class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+        </div>
+
+        <!-- Login Panel -->
+        <div id="loginPanel" class="form-panel active">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="loginEmail" class="form-control" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+            </div>
+            <button class="btn btn-primary btn-submit" onclick="handleLogin()">Sign In <i class="fas fa-arrow-right"></i></button>
+        </div>
+
+        <!-- Signup Panel -->
+        <div id="signupPanel" class="form-panel">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="signupName" class="form-control" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="signupEmail" class="form-control" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="signupPassword" class="form-control" placeholder="Min. 6 characters" required>
+            </div>
+            <button class="btn btn-primary btn-submit" onclick="handleSignup()">Create Account <i class="fas fa-user-plus"></i></button>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/shared.js"></script>
+
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+
+            if (tab === 'login') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('loginPanel').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('signupPanel').classList.add('active');
+            }
+        }
+
+        function redirectByRole(uid) {
+            db.collection('users').doc(uid).get().then((doc) => {
+                if (!doc.exists) {
+                    window.location.href = 'user-dashboard.html';
+                    return;
+                }
+                const role = doc.data().role;
+                window.location.href = role === 'admin' ? 'admin-dashboard.html' : 'user-dashboard.html';
+            }).catch(() => {
+                window.location.href = 'user-dashboard.html';
+            });
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!email || !password) {
+                Omnitick.showToast('Please fill in all fields', 'error');
+                return;
+            }
+
+            Omnitick.showLoading();
+            auth.signInWithEmailAndPassword(email, password)
+                .then((cred) => redirectByRole(cred.user.uid))
+                .catch((error) => {
+                    Omnitick.hideLoading();
+                    let msg = 'Login failed.';
+                    if (error.code === 'auth/user-not-found') msg = 'Account not found.';
+                    if (error.code === 'auth/wrong-password') msg = 'Incorrect password.';
+                    if (error.code === 'auth/invalid-email') msg = 'Invalid email address.';
+                    Omnitick.showToast(msg, 'error');
+                });
+        }
+
+        function handleSignup() {
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
+            const password = document.getElementById('signupPassword').value;
+
+            if (!name || !email || !password) {
+                Omnitick.showToast('Please fill in all fields', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                Omnitick.showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            Omnitick.showLoading();
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((cred) => {
+                    return db.collection('users').doc(cred.user.uid).set({
+                        uid: cred.user.uid,
+                        name: name,
+                        email: email,
+                        role: 'user',
+                        status: 'active',
+                        createdAt: new Date()
+                    });
+                })
+                .then(() => {
+                    Omnitick.hideLoading();
+                    Omnitick.showToast('Account created successfully!', 'success');
+                    setTimeout(() => window.location.href = 'user-dashboard.html', 1500);
+                })
+                .catch((error) => {
+                    Omnitick.hideLoading();
+                    let msg = 'Signup failed.';
+                    if (error.code === 'auth/email-already-in-use') msg = 'Email is already registered.';
+                    Omnitick.showToast(msg, 'error');
+                });
+        }
+
+        // Auto-redirect if logged in
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                Omnitick.showLoading();
+                redirectByRole(user.uid);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const activePanel = document.querySelector('.form-panel.active');
+                if (activePanel.id === 'loginPanel') handleLogin();
+                else handleSignup();
+            }
+        });
+    </script>
+</body>
+</html>

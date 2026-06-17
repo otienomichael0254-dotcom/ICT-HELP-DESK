@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNTRH - Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        :root {
+            --sidebar-w: 260px;
+        }
+
+        body {
+            display: flex;
+            background: var(--bg-main);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--bg-surface);
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            box-shadow: var(--shadow-md);
+            z-index: 50;
+            padding: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            text-decoration: none;
+        }
+
+        .admin-badge {
+            font-size: 0.7rem;
+            background: var(--danger);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-sm);
+            text-transform: uppercase;
+        }
+
+        .sidebar-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 0 1.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            padding: 0 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--primary-light);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Main Content */
+        .main-wrapper {
+            flex: 1;
+            margin-left: var(--sidebar-w);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            height: var(--navbar-h);
+            background: var(--bg-surface);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 2rem;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.35rem 0.75rem;
+            background: var(--bg-main);
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-chip .avatar {
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .content-area {
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover { transform: translateY(-2px); }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.blue { background: #E0E7FF; color: var(--primary); }
+        .stat-icon.yellow { background: #FEF3C7; color: var(--warning); }
+        .stat-icon.green { background: #D1FAE5; color: var(--success); }
+        .stat-icon.red { background: #FEE2E2; color: var(--danger); }
+
+        .stat-info h4 { font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 0.25rem; }
+        .stat-info p { color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; }
+
+        /* Tables */
+        .data-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .data-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--bg-main);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .data-header h3 { font-size: 1.1rem; font-weight: 600; }
+
+        .table-responsive { width: 100%; overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        th {
+            background: #F9FAFB;
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--bg-main);
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #F9FAFB; }
+
+        .status-select {
+            padding: 0.4rem 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid #E5E7EB;
+            font-family: inherit;
+            font-size: 0.85rem;
+            background: white;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .status-select:focus { border-color: var(--primary); }
+
+        .btn-action {
+            padding: 0.35rem 0.6rem;
+            border-radius: var(--radius-sm);
+            border: none;
+            background: var(--danger);
+            color: white;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+
+        .btn-action:hover { background: #B91C1C; }
+
+        /* User Cards */
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .user-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .user-card:hover { box-shadow: var(--shadow-md); }
+
+        .user-card .avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--info), var(--primary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .user-info { flex: 1; }
+        .user-info h4 { font-weight: 600; font-size: 1.05rem; }
+        .user-info p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.75rem; }
+
+        .filter-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            border: 1px solid #E5E7EB;
+            background: white;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .empty-row td {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a href="#" class="sidebar-brand">
+            <i class="fas fa-layer-group"></i> MNTRH
+            <span class="admin-badge">Admin</span>
+        </a>
+
+        <div class="sidebar-label">Main</div>
+        <div class="sidebar-nav">
+            <button class="nav-item active" onclick="showSection('overview')">
+                <i class="fas fa-chart-pie"></i> Overview
+            </button>
+            <button class="nav-item" onclick="showSection('tickets')">
+                <i class="fas fa-ticket-alt"></i> All Tickets
+            </button>
+        </div>
+
+        <div class="sidebar-label">Management</div>
+        <div class="sidebar-nav">
+            <button class="nav-item" onclick="showSection('users')">
+                <i class="fas fa-users"></i> Users
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-wrapper">
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="user-chip">
+                    <div class="avatar" id="adminAvatar">A</div>
+                    <span id="adminName">Admin</span>
+                </div>
+                <button class="btn btn-secondary" onclick="Omnitick.logout()" style="padding: 0.4rem 0.75rem;">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </header>
+
+        <main class="content-area">
+
+            <!-- Overview Section -->
+            <div class="section active" id="overviewSection">
+                <h2 class="section-title">Overview</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-ticket-alt"></i></div>
+                        <div class="stat-info">
+                            <h4 id="statTotal">0</h4>
+                            <p>Total Tickets</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red"><i class="fas fa-folder-open"></i></div>
+                        <div class="stat-info">
+                            <h4 id="statOpen">0</h4>
+                            <p>Open</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow"><i class="fas fa-clock"></i></div>
+                        <div class="stat-info">
+                            <h4 id="statPending">0</h4>
+                            <p>Pending</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info">
+                            <h4 id="statResolved">0</h4>
+                            <p>Resolved</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="data-card">
+                    <div class="data-header">
+                        <h3>Recent Tickets</h3>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>User</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentTicketsBody">
+                                <tr class="empty-row"><td colspan="6">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tickets Section -->
+            <div class="section" id="ticketsSection">
+                <h2 class="section-title">All Tickets</h2>
+                
+                <div class="data-card">
+                    <div class="data-header">
+                        <h3>Manage Tickets</h3>
+                        <div class="filter-group">
+                            <button class="filter-btn active" onclick="filterTickets('all', this)">All</button>
+                            <button class="filter-btn" onclick="filterTickets('open', this)">Open</button>
+                            <button class="filter-btn" onclick="filterTickets('pending', this)">Pending</button>
+                            <button class="filter-btn" onclick="filterTickets('resolved', this)">Resolved</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>User</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allTicketsBody">
+                                <tr class="empty-row"><td colspan="7">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div class="section" id="usersSection">
+                <h2 class="section-title">User Management</h2>
+                <div class="users-grid" id="usersGrid">
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted)">
+                        Loading users...
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/shared.js"></script>
+
+    <script>
+        let allTickets = [];
+        let allUsers = [];
+        let currentFilter = 'all';
+
+        Omnitick.showLoading();
+
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            db.collection('users').doc(user.uid).get().then((doc) => {
+                if (!doc.exists || doc.data().role !== 'admin') {
+                    window.location.href = 'user-dashboard.html';
+                    return;
+                }
+
+                const data = doc.data();
+                document.getElementById('adminName').textContent = data.name || user.email;
+                document.getElementById('adminAvatar').textContent = (data.name || user.email).charAt(0).toUpperCase();
+
+                Omnitick.hideLoading();
+                loadAllData();
+            });
+        });
+
+        function showSection(name) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(l => l.classList.remove('active'));
+
+            const map = { overview: 'overviewSection', tickets: 'ticketsSection', users: 'usersSection' };
+            document.getElementById(map[name]).classList.add('active');
+
+            const navMap = { overview: 0, tickets: 1, users: 2 };
+            document.querySelectorAll('.nav-item')[navMap[name]].classList.add('active');
+
+            if (name === 'users') loadUsers();
+            if (name === 'overview' || name === 'tickets') loadTickets();
+        }
+
+        function loadAllData() {
+            loadTickets();
+        }
+
+        function loadTickets() {
+            db.collection('tickets').orderBy('createdAt', 'desc').get().then((snap) => {
+                allTickets = [];
+                let open = 0, pending = 0, resolved = 0;
+
+                snap.forEach((doc) => {
+                    const t = { id: doc.id, ...doc.data() };
+                    allTickets.push(t);
+                    if (t.status === 'open') open++;
+                    else if (t.status === 'pending') pending++;
+                    else if (t.status === 'resolved') resolved++;
+                });
+
+                document.getElementById('statTotal').textContent = allTickets.length;
+                document.getElementById('statOpen').textContent = open;
+                document.getElementById('statPending').textContent = pending;
+                document.getElementById('statResolved').textContent = resolved;
+
+                renderRecentTickets();
+                renderAllTickets();
+            }).catch(err => Omnitick.showToast('Error loading tickets: ' + err.message, 'error'));
+        }
+
+        function loadUsers() {
+            db.collection('users').orderBy('createdAt', 'desc').get().then((snap) => {
+                allUsers = [];
+                snap.forEach((doc) => allUsers.push({ id: doc.id, ...doc.data() }));
+                renderUsers();
+            }).catch(err => Omnitick.showToast('Error loading users: ' + err.message, 'error'));
+        }
+
+        function renderRecentTickets() {
+            const tbody = document.getElementById('recentTicketsBody');
+            const recent = allTickets.slice(0, 6);
+
+            if (recent.length === 0) {
+                tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No tickets found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = recent.map(t => `
+                <tr>
+                    <td style="font-family:monospace; color:var(--text-muted)">#${t.id.substring(0,6)}</td>
+                    <td style="font-weight:500">${t.title}</td>
+                    <td>${t.userName}</td>
+                    <td><span class="badge priority-${t.priority}">${t.priority}</span></td>
+                    <td><span class="badge status-${t.status}">${t.status}</span></td>
+                    <td>${Omnitick.formatDate(t.createdAt)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAllTickets() {
+            const tbody = document.getElementById('allTicketsBody');
+            const filtered = currentFilter === 'all' ? allTickets : allTickets.filter(t => t.status === currentFilter);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No tickets found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(t => `
+                <tr>
+                    <td style="font-family:monospace; color:var(--text-muted)">#${t.id.substring(0,6)}</td>
+                    <td style="font-weight:500; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.title}</td>
+                    <td>${t.userName}</td>
+                    <td><span class="badge priority-${t.priority}">${t.priority}</span></td>
+                    <td>
+                        <select class="status-select" onchange="updateTicketStatus('${t.id}', this.value)">
+                            <option value="open" ${t.status === 'open' ? 'selected' : ''}>Open</option>
+                            <option value="pending" ${t.status === 'pending' ? 'selected' : ''}>Pending</option>
+                            <option value="resolved" ${t.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                        </select>
+                    </td>
+                    <td>${Omnitick.formatDate(t.createdAt)}</td>
+                    <td>
+                        <button class="btn-action" onclick="deleteTicket('${t.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterTickets(status, btnElement) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+            renderAllTickets();
+        }
+
+        function updateTicketStatus(ticketId, newStatus) {
+            db.collection('tickets').doc(ticketId).update({
+                status: newStatus,
+                updatedAt: new Date()
+            }).then(() => {
+                Omnitick.showToast('Ticket updated successfully', 'success');
+                loadTickets();
+            }).catch(err => Omnitick.showToast('Error updating ticket: ' + err.message, 'error'));
+        }
+
+        function deleteTicket(ticketId) {
+            if (confirm('Are you sure you want to delete this ticket?')) {
+                db.collection('tickets').doc(ticketId).delete().then(() => {
+                    Omnitick.showToast('Ticket deleted', 'success');
+                    loadTickets();
+                }).catch(err => Omnitick.showToast('Error deleting ticket: ' + err.message, 'error'));
+            }
+        }
+
+        function renderUsers() {
+            const container = document.getElementById('usersGrid');
+            if (allUsers.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted)">No users found</div>';
+                return;
+            }
+
+            container.innerHTML = allUsers.map(u => `
+                <div class="user-card">
+                    <div class="avatar">${u.name ? u.name.charAt(0).toUpperCase() : u.email.charAt(0).toUpperCase()}</div>
+                    <div class="user-info">
+                        <h4>${u.name || 'No Name'}</h4>
+                        <p>${u.email}</p>
+                        <div>
+                            <span class="badge role-${u.role}">${u.role}</span>
+                            <span class="badge status-${u.status || 'active'}">${u.status || 'Active'}</span>
+                        </div>
+                    </div>
+                    <button class="btn-action" onclick="deleteUser('${u.id}')" ${u.role === 'admin' ? 'disabled style="opacity:0.5"' : ''}>
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function deleteUser(userId) {
+            if (confirm('Delete this user? (Note: This only deletes their Firestore profile, not Firebase Auth due to client-side limitations)')) {
+                db.collection('users').doc(userId).delete().then(() => {
+                    Omnitick.showToast('User profile deleted', 'success');
+                    loadUsers();
+                }).catch(err => Omnitick.showToast('Error deleting user: ' + err.message, 'error'));
+            }
+        }
+    </script>
+</body>
+</html>
